@@ -1,5 +1,6 @@
 import express from "express"
 import createHttpError from "http-errors"
+import q2m from "query-to-mongo"
 
 import BlogPostModel from "./schema.js"
 
@@ -108,9 +109,24 @@ blogPostsRouter.get("/blogPostId/comments/:commentId", async (req, res, next) =>
 
 // POST /blogPosts/:id => adds a new comment for the specified blog post
 
-blogPostsRouter.post("/blogPostId/", async (req, res, next) => {
+blogPostsRouter.post("/:blogPostId/comments", async (req, res, next) => {
     try {
-        
+        const comments = await BlogPostModel.findById(req.body.blogPostId, { _id: 0})
+        if (comments) {
+            const commentToInsert = { ...comments.toObject(), commentDate: new Date()}
+
+            const updatedBlogPost = await BlogPostModel.findByIdAndUpdate(
+                req.params.blogPostId,
+                { $push: { comments: commentToInsert }}, { new: true }
+            )
+            if (updatedBlogPost) {
+                res.send(updatedBlogPost)
+            } else {
+                next(createHttpError(404, `Blog post with id ${req.params.blogPostId} not found!`))
+            }
+        } else {
+            next(createHttpError(404, `Comment with id ${req.params.blogPostId} not found!`))
+        }
     } catch (error) {
         next(error)
     }
@@ -118,9 +134,16 @@ blogPostsRouter.post("/blogPostId/", async (req, res, next) => {
 
 // PUT /blogPosts/:id/comment/:commentId => edit the comment belonging to the specified blog post
 
-blogPostsRouter.put("/blogPostId/comment/:commentId", async (req, res, next) => {
+blogPostsRouter.put("/:blogPostId", async (req, res, next) => {
     try {
-        
+        const id = req.params.blogPostId
+        const updatedBlogPost = await BlogPostModel.findByIdAndUpdate(id, req.body, { new: true })
+
+        if (updatedBlogPost) {
+            res.send(updatedBlogPost)
+        } else {
+            next(createHttpError(404, `Blog post with id ${id} not found!`))
+        }
     } catch (error) {
         next(error)
     }
@@ -128,9 +151,18 @@ blogPostsRouter.put("/blogPostId/comment/:commentId", async (req, res, next) => 
 
 // DELETE /blogPosts/:id/comment/:commentId=> delete the comment belonging to the specified blog post
 
-blogPostsRouter.delete("/blogPostId/comment/:commentId", async (req, res, next) => {
+blogPostsRouter.delete("/:blogPostId/comments/:commentId", async (req, res, next) => {
     try {
-        
+        const modifiedBlogPost = await BlogPostModel.findByAndUpdate(
+            req.params.blogPostId,
+            { $pull: { comments: { _id: req.params.commentId }}},
+            { new: true }
+        )
+        if (modifiedBlogPost) {
+            res.send(modifiedBlogPost)
+        } else {
+            next(createHttpError(404, `Blog post with id ${req.params.blogPostId} not found!`))
+        }
     } catch (error) {
         next(error)
     }

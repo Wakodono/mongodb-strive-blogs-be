@@ -35,10 +35,19 @@ const blogPostsSchema = new Schema(
     content: String,
     comments: [
       {
-        title: {String, required: true},
-        content: {String, required: true},
-        rating: {Number, required:true},
-        commentDate: {Date, required: true}
+        title: {type: String, required: true},
+        content: {type: String, required: true},
+        rating: {
+          type: Number,
+          min: [1, "Rating must be at least 1"],
+          max: [5, "Rating must be a maximum of 5"],
+          default: 5,
+           required:true
+          },
+        user: {
+          name: {type: String, required: true },
+          avatar: { type: String, required: true },
+        }
       }
     ]
   },
