@@ -73,7 +73,13 @@ blogPostsRouter.delete("/:blogPostId", async (req, res, next) => {
 
 blogPostsRouter.get("/blogPostId/comments", async (req, res, next) => {
     try {
+        const blogPost = await BlogPostModel.findById(req.params.commentId)
         
+        if (blogPost) {
+            res.send(blogPost.comments)
+        } else {
+            next(createHttpError(404, `Blog post with id ${req.params.blogPostId} not found!`))
+        }
     } catch (error) {
         next(error)
     }
@@ -83,11 +89,17 @@ blogPostsRouter.get("/blogPostId/comments", async (req, res, next) => {
 
 blogPostsRouter.get("/blogPostId/comments/:commentId", async (req, res, next) => {
     try {
-        const blogPost = await BlogPostModel.findById(req.params.commentId)
-        if (blogPost) {
-            res.send(blogPost.comments)
+        const comment = await BlogPostModel.findById(req.params.commentId)
+        if (comment) {
+            const comment = blogPost.comments.find(c => c._id.toString() === req.params.commentId)
+            if (comment) {
+                res.send(comment)
+            } else {
+                next(createHttpError(404, `Comment with id ${req.params.commentId} not found!`))
+            }
         } else {
             next(createHttpError(404, `Blog post with id ${req.params.blogPostId} not found!`))
+
         }
     } catch (error) {
         next(error)
