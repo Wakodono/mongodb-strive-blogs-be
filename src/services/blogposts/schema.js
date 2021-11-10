@@ -33,6 +33,14 @@ const blogPostsSchema = new Schema(
       avatar: String,
     },
     content: String,
+    comments: [
+      {
+        title: {String, required: true},
+        content: {String, required: true},
+        rating: {Number, required:true},
+        commentDate: {Date, required: true}
+      }
+    ]
   },
   {
     timestamps: true,

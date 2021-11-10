@@ -69,4 +69,50 @@ blogPostsRouter.delete("/:blogPostId", async (req, res, next) => {
     }
 })
 
+// GET /blogPosts/:id/comments => returns all the comments for the specified blog post
+
+blogPostsRouter.get("/blogPostId/comments", async (req, res, next) => {
+    try {
+        
+    } catch (error) {
+        next(error)
+    }
+})
+
+// GET /blogPosts/:id/comments/:commentId=> returns a single comment for the specified blog post
+
+blogPostsRouter.get("/blogPostId/comments/:commentId", async (req, res, next) => {
+    try {
+        
+    } catch (error) {
+        next(error)
+    }
+})
+
+// POST /blogPosts/:id => adds a new comment for the specified blog post
+
+blogPostsRouter.get("/blogPostId/", async (req, res, next) => {
+    try {
+        
+    } catch (error) {
+        next(error)
+    }
+})
+blogPostsRouter.get("/blogPostId/comments", async (req, res, next) => {
+    try {
+        
+    } catch (error) {
+        next(error)
+    }
+})
+blogPostsRouter.get("/blogPostId/comments", async (req, res, next) => {
+    try {
+        
+    } catch (error) {
+        next(error)
+    }
+})
+
+
+
 export default blogPostsRouter
