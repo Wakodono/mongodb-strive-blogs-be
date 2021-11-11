@@ -72,14 +72,15 @@ blogPostsRouter.delete("/:blogPostId", async (req, res, next) => {
 
 // GET /blogPosts/:id/comments => returns all the comments for the specified blog post
 
-blogPostsRouter.get("/blogPostId/comments", async (req, res, next) => {
+blogPostsRouter.get("/:id/comments", async (req, res, next) => {
+    console.log(req.params.id)
     try {
-        const blogPost = await BlogPostModel.findById(req.params.commentId)
+        const blogPost = await BlogPostModel.findById(req.params.id)
         
         if (blogPost) {
             res.send(blogPost.comments)
         } else {
-            next(createHttpError(404, `Blog post with id ${req.params.blogPostId} not found!`))
+            next(createHttpError(404, `Blog post with id ${req.params.id} not found!`))
         }
     } catch (error) {
         next(error)
@@ -88,7 +89,7 @@ blogPostsRouter.get("/blogPostId/comments", async (req, res, next) => {
 
 // GET /blogPosts/:id/comments/:commentId=> returns a single comment for the specified blog post
 
-blogPostsRouter.get("/blogPostId/comments/:commentId", async (req, res, next) => {
+blogPostsRouter.get("/:id/comments/:commentId", async (req, res, next) => {
     try {
         const comment = await BlogPostModel.findById(req.params.commentId)
         if (comment) {
@@ -109,23 +110,21 @@ blogPostsRouter.get("/blogPostId/comments/:commentId", async (req, res, next) =>
 
 // POST /blogPosts/:id => adds a new comment for the specified blog post
 
-blogPostsRouter.post("/:blogPostId/comments", async (req, res, next) => {
+blogPostsRouter.post("/:id/", async (req, res, next) => {
     try {
-        const comments = await BlogPostModel.findById(req.body.blogPostId, { _id: 0})
-        if (comments) {
-            const commentToInsert = { ...comments.toObject(), commentDate: new Date()}
-
-            const updatedBlogPost = await BlogPostModel.findByIdAndUpdate(
-                req.params.blogPostId,
-                { $push: { comments: commentToInsert }}, { new: true }
+        const blogPost = await BlogPostModel.findById(req.body.id, { _id: 0 })
+        if (blogPost) {
+            await blogPost.findByIdAndUpdate(
+                req.params.id,
+                {
+                    $push: {
+                        comments: req.body,
+                    },
+                },
+                { new: true }
             )
-            if (updatedBlogPost) {
-                res.send(updatedBlogPost)
-            } else {
-                next(createHttpError(404, `Blog post with id ${req.params.blogPostId} not found!`))
-            }
         } else {
-            next(createHttpError(404, `Comment with id ${req.params.blogPostId} not found!`))
+            next(createHttpError(404, `Blog post with id ${req.params.id} not found!`))
         }
     } catch (error) {
         next(error)
