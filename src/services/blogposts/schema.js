@@ -56,4 +56,14 @@ const blogPostsSchema = new Schema(
   }
 );
 
+/* {
+  "title": "Strive school review",
+  "content": "{{$randomLoremParagraph}}",
+  "rating": 5,
+  "user": {
+    "name": "{{$randomFullName }}",
+    "avatar": "{{$randomAvatarImage}}"
+  }
+} */
+
 export default model("BlogPost", blogPostsSchema)

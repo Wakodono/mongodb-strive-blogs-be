@@ -36,6 +36,10 @@ mongoose.connection.on("connected", () => {
   })
 })
 
+server.on("error", (error) =>
+  console.log(`❌ Server is not running due to : ${error}`)
+);
+
 mongoose.connection.on("error", err => {
   console.log(err)
 })

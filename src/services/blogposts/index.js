@@ -112,9 +112,9 @@ blogPostsRouter.get("/:id/comments/:commentId", async (req, res, next) => {
 
 blogPostsRouter.post("/:id/", async (req, res, next) => {
     try {
-        const blogPost = await BlogPostModel.findById(req.body.id, { _id: 0 })
+        const blogPost = await BlogPostModel.findById(req.params.id, { _id: 0 })
         if (blogPost) {
-            await blogPost.findByIdAndUpdate(
+            const updatedBlogPost = await blogPost.findByIdAndUpdate(
                 req.params.id,
                 {
                     $push: {
@@ -123,6 +123,9 @@ blogPostsRouter.post("/:id/", async (req, res, next) => {
                 },
                 { new: true }
             )
+            if(updatedblogPost) {
+                res.send(updatedBlogPost)
+            }
         } else {
             next(createHttpError(404, `Blog post with id ${req.params.id} not found!`))
         }
