@@ -70,17 +70,17 @@ blogPostsRouter.delete("/:blogPostId", async (req, res, next) => {
     }
 })
 
-// GET /blogPosts/:id/comments => returns all the comments for the specified blog post
+// GET /blogposts/:blogPostId/comments => returns all the comments for the specified blog post
 
-blogPostsRouter.get("/:id/comments", async (req, res, next) => {
-    console.log(req.params.id)
+blogPostsRouter.get("/:blogPostId/comments", async (req, res, next) => {
     try {
-        const blogPost = await BlogPostModel.findById(req.params.id)
+        const id = req.params.blogPostId
+        const blogPost = await BlogPostModel.findById(id)
         
         if (blogPost) {
             res.send(blogPost.comments)
         } else {
-            next(createHttpError(404, `Blog post with id ${req.params.id} not found!`))
+            next(createHttpError(404, `Blog post with id ${req.params.blogPostId} not found!`))
         }
     } catch (error) {
         next(error)
@@ -89,11 +89,14 @@ blogPostsRouter.get("/:id/comments", async (req, res, next) => {
 
 // GET /blogPosts/:id/comments/:commentId=> returns a single comment for the specified blog post
 
-blogPostsRouter.get("/:id/comments/:commentId", async (req, res, next) => {
+blogPostsRouter.get("/:blogPostId/comments/:commentId", async (req, res, next) => {
     try {
-        const comment = await BlogPostModel.findById(req.params.commentId)
-        if (comment) {
-            const comment = blogPost.comments.find(c => c._id.toString() === req.params.commentId)
+        const id = await req.params.blogPostId
+        const commentId = req.params.commentId
+
+        const blogPost = await productModel.findById(id)
+        if (blogPost) {
+            const comment = blogPost.comments.find(commentId)
             if (comment) {
                 res.send(comment)
             } else {
@@ -110,20 +113,25 @@ blogPostsRouter.get("/:id/comments/:commentId", async (req, res, next) => {
 
 // POST /blogPosts/:id => adds a new comment for the specified blog post
 
-blogPostsRouter.post("/:id/", async (req, res, next) => {
+blogPostsRouter.post("/:blogPostId/comments", async (req, res, next) => {
     try {
-        const blogPost = await BlogPostModel.findById(req.params.id, { _id: 0 })
+        const id = req.params.blogPostId
+        const newComment = req.body
+
+        const blogPost = await BlogPostModel.findBy(id)
+
         if (blogPost) {
-            const updatedBlogPost = await blogPost.findByIdAndUpdate(
-                req.params.id,
+
+            const updatedBlogPost = await BlogPostModel.findByIdAndUpdate(
+                id,
                 {
                     $push: {
-                        comments: req.body,
-                    },
+                        comments: newComment
+                    }
                 },
                 { new: true }
             )
-            if(updatedblogPost) {
+            if(updatedBlogPost) {
                 res.send(updatedBlogPost)
             }
         } else {
