@@ -114,14 +114,17 @@ blogPostsRouter.get("/:blogPostId/comments/:commentId", async (req, res, next) =
 // POST /blogPosts/:id => adds a new comment for the specified blog post
 
 blogPostsRouter.post("/:blogPostId/comments", async (req, res, next) => {
+    //It's always good practice to wrap things in a try catch when inside an asynchronous func
     try {
-        const id = req.params.blogPostId
-        const newComment = req.body
+        const id = req.params.blogPostId //find the id of the target blog in the parameters of our http request and store it in a variable
+        const newComment = req.body //The comment we want to add to the blogpost comes from the body of our POST request
 
-        const blogPost = await BlogPostModel.findBy(id)
+        const blogPost = await BlogPostModel.findById(id) // create a variable to store the target blogpost as we will need to use it later
 
         if (blogPost) {
+            //if the blogpost with the specified id exists proceed
 
+            //The following implements the $push method which is simply an array method desinged to add a new item 
             const updatedBlogPost = await BlogPostModel.findByIdAndUpdate(
                 id,
                 {
