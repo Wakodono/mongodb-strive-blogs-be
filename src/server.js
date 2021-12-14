@@ -2,9 +2,10 @@ import express from "express"
 import listEndpoints from "express-list-endpoints"
 import mongoose from "mongoose"
 import cors from "cors"
+import blogPostsRouter from "./services/blogposts/index.js"
+import usersRouter from "./services/users/index.js"
 import { notFoundHandler, badRequestHandler, genericErrorHandler } from "./errorHandlers.js"
 
-import blogPostsRouter from "./services/blogposts/index.js"
 const server = express()
 
 const port = process.env.PORT || 3001
