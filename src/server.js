@@ -17,6 +17,7 @@ server.use(express.json())
 //ENDPOINTS
 
 server.use("/blogposts", blogPostsRouter)
+server.use("/users, usersRouter")
 
 //ERROR HANDLERS
 
