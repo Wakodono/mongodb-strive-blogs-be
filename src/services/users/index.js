@@ -2,10 +2,11 @@ import express from "express"
 import UserModel from "./schema.js"
 import { adminOnlyMiddleware } from "../../auth/admin.js"
 import { basicAuthMiddleware } from "../../auth/basic.js"
+import { JWTAuthMiddleware } from "../../auth/token.js"
 
 const usersRouter = express.Router()
 
-usersRouter.post("/", adminOnlyMiddleware, async (req, res, next) => {
+usersRouter.post("/", JWTAuthMiddleware, async (req, res, next) => {
     try {
         const newUser = new UserModel(req.body)
         const { _id } = await newUser.save()
@@ -15,7 +16,7 @@ usersRouter.post("/", adminOnlyMiddleware, async (req, res, next) => {
     }
 })
 
-usersRouter.get("/", basicAuthMiddleware, async (req, res, next) => {
+usersRouter.get("/", JWTAuthMiddleware, async (req, res, next) => {
     try {
         const users = await UserModel.find()
         res.send(users)
@@ -24,7 +25,7 @@ usersRouter.get("/", basicAuthMiddleware, async (req, res, next) => {
     }
 })
 
-usersRouter.get("/:id", basicAuthMiddleware, async (req, res, next) => {
+usersRouter.get("/:id", JWTAuthMiddleware, async (req, res, next) => {
     try {
         const user = await UserModel.findById(req.params.id)
         res.send(user) 
@@ -33,7 +34,7 @@ usersRouter.get("/:id", basicAuthMiddleware, async (req, res, next) => {
     }
 })
 
-usersRouter.put("/:id", adminOnlyMiddleware, async (req, res, next) => {
+usersRouter.put("/:id", JWTAuthMiddleware, adminOnlyMiddleware, async (req, res, next) => {
     try {
         const id = req.params.id
         const updatedUser = await UserModel.findByIdAndUpdate(id, req.body, { new: true })
@@ -48,7 +49,7 @@ usersRouter.put("/:id", adminOnlyMiddleware, async (req, res, next) => {
     }
 })
 
-usersRouter.delete("/:id", adminOnlyMiddleware, async (req, res, next) => {
+usersRouter.delete("/:id", JWTAuthMiddleware, adminOnlyMiddleware, async (req, res, next) => {
     try {
        const id = req.params.id
        const deletedUser = await UserModel.deleteOne({ _id: id })
@@ -60,7 +61,7 @@ usersRouter.delete("/:id", adminOnlyMiddleware, async (req, res, next) => {
     }
 })
 
-usersRouter.get("/me", basicAuthMiddleware, async (req, res, next) => {
+usersRouter.get("/me", JWTAuthMiddleware, async (req, res, next) => {
     try {
       res.send(req.user)
     } catch (error) {
@@ -68,7 +69,7 @@ usersRouter.get("/me", basicAuthMiddleware, async (req, res, next) => {
     }
   })
 
-  usersRouter.put("/me", basicAuthMiddleware, async (req, res, next) => {
+  usersRouter.put("/me", JWTAuthMiddleware, async (req, res, next) => {
     try {
         req.user.name = "Wako"
         await req.user.save()
@@ -78,13 +79,42 @@ usersRouter.get("/me", basicAuthMiddleware, async (req, res, next) => {
     }
   })
 
-  usersRouter.delete("/me", basicAuthMiddleware, async (req, res, next) => {
+  usersRouter.delete("/me", JWTAuthMiddleware, async (req, res, next) => {
     try {
       await req.user.deleteOne()
       res.status(204).send()
     } catch (error) {
       next(error)
     }
+  })
+
+  usersRouter.post("/login", async (req, res, next) => {
+    try {
+      // 1. Get credentials from req.body
+      const { email, password } = req.body
+  
+      // 2. Verify credentials
+      const user = await UserModel.checkCredentials(email, password)
+  
+      if (user) {
+        // 3. If credentials are fine we are going to generate an access token
+        const accessToken = await JWTAuthenticate(user)
+        res.send({ accessToken })
+      } else {
+        // 4. If not --> error (401)
+        next(createHttpError(401, "Credentials not ok!"))
+      }
+    } catch (error) {
+      next(error)
+    }
+  })
+
+  usersRouter.post("/register", async (req, res, next) => {
+      try {
+          
+      } catch (error) {
+          next(error)
+      }
   })
 
 export default usersRouter
