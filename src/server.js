@@ -2,18 +2,23 @@ import express from "express"
 import listEndpoints from "express-list-endpoints"
 import mongoose from "mongoose"
 import cors from "cors"
+import passport from "passport"
 import blogPostsRouter from "./services/blogposts/index.js"
 import usersRouter from "./services/users/index.js"
 import { notFoundHandler, badRequestHandler, genericErrorHandler } from "./errorHandlers.js"
+import GoogleStrategy from "./auth/oauth.js"
+
 
 const server = express()
 
 const port = process.env.PORT || 3001
 
 //MIDDLEWARES
+passport.use("google", GoogleStrategy)
 
 server.use(cors())
 server.use(express.json())
+server.use(passport.initialize())
 
 //ENDPOINTS
 

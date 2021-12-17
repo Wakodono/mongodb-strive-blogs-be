@@ -1,4 +1,5 @@
 import express from "express"
+import passport from "passport"
 import UserModel from "./schema.js"
 import { adminOnlyMiddleware } from "../../auth/admin.js"
 import { basicAuthMiddleware } from "../../auth/basic.js"
@@ -25,6 +26,24 @@ usersRouter.get("/", JWTAuthMiddleware, async (req, res, next) => {
     }
 })
 
+usersRouter.get("/me", JWTAuthMiddleware, async (req, res, next) => {
+    try {
+      res.send(req.user)
+    } catch (error) {
+      next(error)
+    }
+  })
+
+usersRouter.get("/googleLogin", async (req, res, next) => {})
+
+usersRouter.get("/googleRedirect", async (req, res, next) => {
+    try {
+        
+    } catch (error) {
+        next(error)
+    }
+})
+
 usersRouter.get("/:id", JWTAuthMiddleware, async (req, res, next) => {
     try {
         const user = await UserModel.findById(req.params.id)
@@ -33,6 +52,16 @@ usersRouter.get("/:id", JWTAuthMiddleware, async (req, res, next) => {
         next(error)
     }
 })
+
+usersRouter.put("/me", JWTAuthMiddleware, async (req, res, next) => {
+    try {
+        req.user.name = "Wako"
+        await req.user.save()
+        res.send()
+    } catch (error) {
+      next(error)
+    }
+  })
 
 usersRouter.put("/:id", JWTAuthMiddleware, adminOnlyMiddleware, async (req, res, next) => {
     try {
@@ -49,6 +78,15 @@ usersRouter.put("/:id", JWTAuthMiddleware, adminOnlyMiddleware, async (req, res,
     }
 })
 
+usersRouter.delete("/me", JWTAuthMiddleware, async (req, res, next) => {
+  try {
+    await req.user.deleteOne()
+    res.status(204).send()
+  } catch (error) {
+    next(error)
+  }
+})
+
 usersRouter.delete("/:id", JWTAuthMiddleware, adminOnlyMiddleware, async (req, res, next) => {
     try {
        const id = req.params.id
@@ -61,32 +99,6 @@ usersRouter.delete("/:id", JWTAuthMiddleware, adminOnlyMiddleware, async (req, r
     }
 })
 
-usersRouter.get("/me", JWTAuthMiddleware, async (req, res, next) => {
-    try {
-      res.send(req.user)
-    } catch (error) {
-      next(error)
-    }
-  })
-
-  usersRouter.put("/me", JWTAuthMiddleware, async (req, res, next) => {
-    try {
-        req.user.name = "Wako"
-        await req.user.save()
-        res.send()
-    } catch (error) {
-      next(error)
-    }
-  })
-
-  usersRouter.delete("/me", JWTAuthMiddleware, async (req, res, next) => {
-    try {
-      await req.user.deleteOne()
-      res.status(204).send()
-    } catch (error) {
-      next(error)
-    }
-  })
 
   usersRouter.post("/login", async (req, res, next) => {
     try {
@@ -109,9 +121,15 @@ usersRouter.get("/me", JWTAuthMiddleware, async (req, res, next) => {
     }
   })
 
-  usersRouter.post("/register", async (req, res, next) => {
+  usersRouter.post("/refreshToken", async (req, res, next) => {
       try {
-          
+    // 1. Receive the current refresh token from req.body
+    const { currentRefreshToken } = req.body
+    // 2. Check the validity of that (check if it is not expired, check if it hasn't been compromised, check if it is in db)
+    const { accessToken, refreshToken } = await verifyRefreshAndGenerateTokens(currentRefreshToken)
+    // 3. If everything is fine --> generate a new pair of tokens (accessToken and refreshToken)
+    // 4. Send tokens back as a response
+    res.send({ accessToken, refreshToken })
       } catch (error) {
           next(error)
       }
